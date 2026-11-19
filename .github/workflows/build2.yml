@@ -1,26 +1,326 @@
 name: Build APK
 on:
-  workflow_dispatch:
   push:
+    branches: [main, master]
+  workflow_dispatch:
+
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install SDK platform and build tools
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Unpack project
+      - name: Generate the whole app project
         run: |
-          mkdir proj
-          echo "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" | base64 -d | tar xz -C proj
-      - name: Build
-        working-directory: proj
-        run: gradle assembleDebug --no-daemon
+          set -e
+          mkdir -p _app && cd _app
+          mkdir -p .
+          cat > settings.gradle.kts <<'DNEOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "DataNet"
+          include(":app")
+          DNEOF
+          mkdir -p .
+          cat > build.gradle.kts <<'DNEOF'
+          plugins {
+              id("com.android.application") version "8.5.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+          }
+          DNEOF
+          mkdir -p .
+          cat > gradle.properties <<'DNEOF'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          kotlin.code.style=official
+          DNEOF
+          mkdir -p app
+          cat > app/build.gradle.kts <<'DNEOF'
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+
+          android {
+              namespace = "com.datanet.portal"
+              compileSdk = 34
+
+              defaultConfig {
+                  applicationId = "com.datanet.portal"
+                  minSdk = 24
+                  targetSdk = 34
+                  versionCode = 3
+                  versionName = "1.2"
+                  // عنوان البوابة اللي بيفتحها التطبيق. غيّره هون فقط.
+                  buildConfigField("String", "PORTAL_URL", "\"https://portal.datnet-pro.com/me\"")
+              }
+
+              buildFeatures {
+                  buildConfig = true
+              }
+
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+
+          dependencies {
+              implementation("androidx.core:core-ktx:1.13.1")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+          }
+          DNEOF
+          mkdir -p app/src/main
+          cat > app/src/main/AndroidManifest.xml <<'DNEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+              <application
+                  android:allowBackup="false"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.DataNet"
+                  android:usesCleartextTraffic="false">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          DNEOF
+          mkdir -p app/src/main/java/com/datanet/portal
+          cat > app/src/main/java/com/datanet/portal/MainActivity.kt <<'DNEOF'
+          package com.datanet.portal
+
+          import android.annotation.SuppressLint
+          import android.content.Intent
+          import android.graphics.Bitmap
+          import android.net.Uri
+          import android.os.Bundle
+          import android.net.http.SslError
+          import android.webkit.CookieManager
+          import android.webkit.SslErrorHandler
+          import android.webkit.WebResourceResponse
+          import android.webkit.JsResult
+          import android.webkit.WebChromeClient
+          import android.webkit.WebResourceError
+          import android.webkit.WebResourceRequest
+          import android.webkit.WebSettings
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import androidx.activity.OnBackPressedCallback
+          import androidx.appcompat.app.AlertDialog
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+
+          class MainActivity : AppCompatActivity() {
+
+              private lateinit var web: WebView
+              private lateinit var refresh: SwipeRefreshLayout
+              private val portalHost: String = Uri.parse(BuildConfig.PORTAL_URL).host ?: ""
+
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+                  web = findViewById(R.id.web)
+                  refresh = findViewById(R.id.refresh)
+
+                  web.settings.apply {
+                      javaScriptEnabled = true
+                      domStorageEnabled = true
+                      cacheMode = WebSettings.LOAD_DEFAULT
+                      mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                      allowFileAccess = false
+                      allowContentAccess = false
+                  }
+                  CookieManager.getInstance().setAcceptCookie(true)
+
+                  web.webViewClient = object : WebViewClient() {
+                      override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                          val uri = request.url
+                          if (uri.host == portalHost) return false
+                          // أي رابط خارج البوابة (واتساب، خرائط...) بيفتح بتطبيقه
+                          try {
+                              startActivity(Intent(Intent.ACTION_VIEW, uri))
+                          } catch (_: Exception) {
+                          }
+                          return true
+                      }
+
+                      override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                          refresh.isRefreshing = true
+                      }
+
+                      override fun onPageFinished(view: WebView, url: String?) {
+                          refresh.isRefreshing = false
+                          CookieManager.getInstance().flush()
+                      }
+
+                      override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+                          if (request.isForMainFrame) showOffline("تعذّر الوصول للبوابة (${error.description})")
+                      }
+
+                      override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, errorResponse: WebResourceResponse) {
+                          if (request.isForMainFrame && errorResponse.statusCode >= 400) showOffline("البوابة ردّت بخطأ ${errorResponse.statusCode}")
+                      }
+
+                      override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
+                          handler.cancel()
+                          showOffline("مشكلة بشهادة الأمان (HTTPS) للبوابة")
+                      }
+                  }
+
+                  web.webChromeClient = object : WebChromeClient() {
+                      override fun onJsConfirm(view: WebView, url: String?, message: String?, result: JsResult): Boolean {
+                          AlertDialog.Builder(this@MainActivity)
+                              .setMessage(message)
+                              .setPositiveButton(android.R.string.ok) { _, _ -> result.confirm() }
+                              .setNegativeButton(android.R.string.cancel) { _, _ -> result.cancel() }
+                              .setOnCancelListener { result.cancel() }
+                              .show()
+                          return true
+                      }
+
+                      override fun onJsAlert(view: WebView, url: String?, message: String?, result: JsResult): Boolean {
+                          AlertDialog.Builder(this@MainActivity)
+                              .setMessage(message)
+                              .setPositiveButton(android.R.string.ok) { _, _ -> result.confirm() }
+                              .setOnCancelListener { result.confirm() }
+                              .show()
+                          return true
+                      }
+                  }
+
+                  refresh.setOnChildScrollUpCallback { _, _ -> web.scrollY > 0 }
+                  refresh.setOnRefreshListener { reload() }
+
+                  onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                      override fun handleOnBackPressed() {
+                          if (web.canGoBack()) web.goBack() else finish()
+                      }
+                  })
+
+                  if (savedInstanceState != null) web.restoreState(savedInstanceState) else web.loadUrl(BuildConfig.PORTAL_URL)
+              }
+
+              private fun reload() {
+                  // إذا كانت صفحة "لا يوجد اتصال" ظاهرة، نعيد تحميل البوابة نفسها
+                  val cur = web.url ?: ""
+                  if (cur.isEmpty() || cur.startsWith("data:") || cur.startsWith("about:")) web.loadUrl(BuildConfig.PORTAL_URL) else web.reload()
+              }
+
+              private fun showOffline(reason: String = "") {
+                  refresh.isRefreshing = false
+                  val html = assets.open("offline.html").bufferedReader().use { it.readText() }
+                      .replace("%URL%", BuildConfig.PORTAL_URL)
+                      .replace("%REASON%", android.text.Html.escapeHtml(reason))
+                  web.loadDataWithBaseURL(BuildConfig.PORTAL_URL, html, "text/html", "utf-8", null)
+              }
+
+              override fun onSaveInstanceState(outState: Bundle) {
+                  super.onSaveInstanceState(outState)
+                  web.saveState(outState)
+              }
+
+              override fun onPause() {
+                  super.onPause()
+                  CookieManager.getInstance().flush()
+              }
+          }
+          DNEOF
+          mkdir -p app/src/main/res/values
+          cat > app/src/main/res/values/strings.xml <<'DNEOF'
+          <resources>
+              <string name="app_name">Data Net</string>
+          </resources>
+          DNEOF
+          mkdir -p app/src/main/res/values
+          cat > app/src/main/res/values/themes.xml <<'DNEOF'
+          <resources>
+              <style name="Theme.DataNet" parent="Theme.AppCompat.DayNight.NoActionBar">
+                  <item name="colorPrimary">#337B8F</item>
+                  <item name="colorPrimaryDark">#122028</item>
+                  <item name="android:statusBarColor">#122028</item>
+                  <item name="android:navigationBarColor">#122028</item>
+              </style>
+          </resources>
+          DNEOF
+          mkdir -p app/src/main/res/layout
+          cat > app/src/main/res/layout/activity_main.xml <<'DNEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/refresh"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <WebView
+                  android:id="@+id/web"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent" />
+          </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+          DNEOF
+          mkdir -p app/src/main/assets
+          cat > app/src/main/assets/offline.html <<'DNEOF'
+          <!doctype html>
+          <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <style>
+          body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#122028;color:#e8eef0;font-family:sans-serif;text-align:center;padding:24px}
+          h1{font-size:20px;margin:0 0 8px}p{opacity:.75;font-size:14px;margin:0 0 24px}
+          a{display:inline-block;background:#337B8F;color:#fff;text-decoration:none;padding:12px 32px;border-radius:12px;font-size:16px}
+          </style></head><body><div>
+          <h1>ما في اتصال بالبوابة</h1>
+          <p>تأكد إنك متصل بخط الإنترنت تبعك وجرّب مرة ثانية.</p>
+          <p style="font-size:12px;direction:ltr">%REASON%</p>
+          <a href="%URL%">إعادة المحاولة</a>
+          </div></body></html>
+          DNEOF
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          echo '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' | base64 -d > app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+      - name: Build debug APK
+        run: cd _app && gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: DataNet-APK
-          path: proj/app/build/outputs/apk/debug/app-debug.apk
+          path: _app/app/build/outputs/apk/debug/app-debug.apk
