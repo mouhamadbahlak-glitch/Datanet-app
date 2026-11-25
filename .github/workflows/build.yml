@@ -185,11 +185,16 @@ jobs:
           cat > app/src/main/java/com/datanet/portal/MainActivity.kt <<'DNEOF'
           package com.datanet.portal
 
+          import android.Manifest
           import android.annotation.SuppressLint
           import android.content.Intent
+          import android.content.pm.PackageManager
           import android.graphics.Bitmap
           import android.net.Uri
+          import android.os.Build
           import android.os.Bundle
+          import androidx.core.app.ActivityCompat
+          import androidx.core.content.ContextCompat
           import android.net.http.SslError
           import android.webkit.CookieManager
           import android.webkit.SslErrorHandler
@@ -295,6 +300,21 @@ jobs:
                   })
 
                   if (savedInstanceState != null) web.restoreState(savedInstanceState) else web.loadUrl(BuildConfig.PORTAL_URL)
+
+                  askNotificationPermission()
+              }
+
+              private fun askNotificationPermission() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                      val granted = ContextCompat.checkSelfPermission(
+                          this, Manifest.permission.POST_NOTIFICATIONS
+                      ) == PackageManager.PERMISSION_GRANTED
+                      if (!granted) {
+                          ActivityCompat.requestPermissions(
+                              this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001
+                          )
+                      }
+                  }
               }
 
               private fun reload() {
